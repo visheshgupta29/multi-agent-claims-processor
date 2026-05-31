@@ -2,17 +2,24 @@
 
 from __future__ import annotations
 
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.models.claim import ClaimRequest, ClaimDecision
 from app.pipeline.graph import process_claim
 from app.services.trace_store import trace_store
 
+# Detect if running behind HTTPS proxy (Render, Railway, etc.)
+root_path = os.environ.get("ROOT_PATH", "")
+
 app = FastAPI(
     title="Plum Claims Processing System",
     description="AI-powered health insurance claims processing with multi-agent pipeline",
     version="1.0.0",
+    root_path=root_path,
 )
 
 app.add_middleware(

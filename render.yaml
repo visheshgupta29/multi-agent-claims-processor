@@ -3,7 +3,7 @@ services:
     name: plum-claims-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: PYTHONPATH=. POLICY_FILE_PATH=./policy_terms.json uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: PYTHONPATH=. POLICY_FILE_PATH=./policy_terms.json uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     envVars:
       - key: GEMINI_API_KEY
         sync: false
