@@ -6,20 +6,21 @@ import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.models.claim import ClaimRequest, ClaimDecision
 from app.pipeline.graph import process_claim
 from app.services.trace_store import trace_store
 
-# Detect if running behind HTTPS proxy (Render, Railway, etc.)
-root_path = os.environ.get("ROOT_PATH", "")
+# When behind HTTPS reverse proxy (Render, Railway), explicitly declare server URL
+# so Swagger UI uses https:// scheme for requests.
+_render_url = os.environ.get("RENDER_EXTERNAL_URL")  # Render sets this automatically
+_servers = [{"url": _render_url, "description": "Production"}] if _render_url else None
 
 app = FastAPI(
     title="Plum Claims Processing System",
     description="AI-powered health insurance claims processing with multi-agent pipeline",
     version="1.0.0",
-    root_path=root_path,
+    servers=_servers,
 )
 
 app.add_middleware(
