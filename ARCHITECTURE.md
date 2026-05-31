@@ -299,15 +299,18 @@ PYTHONPATH=. python -m eval.runner
 
 ### Deployment
 
+The system is deployed as two services:
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| FastAPI API | Render (free tier) | https://plum-claims-api.onrender.com |
+| Streamlit UI | Streamlit Cloud (free) | https://multi-agent-claims-processor.streamlit.app |
+
+Both auto-deploy on push to `main`.
+
 ```bash
-# Docker
+# Local Docker
 docker-compose up --build
-
-# Railway
-railway up
-
-# Render
-# Push to GitHub → Connect repo in Render dashboard
 ```
 
 ---

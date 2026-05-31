@@ -14,7 +14,15 @@ AI-powered multi-agent system for automated OPD health insurance claims processi
 - **Graceful degradation** — component failures reduce confidence, don't crash the system
 - **Full observability** — every check, step, and confidence impact is recorded in the trace
 
-## Quick Start
+## Live Demo
+
+| Service | URL |
+|---------|-----|
+| **Streamlit UI** | https://multi-agent-claims-processor.streamlit.app |
+| **API** | https://plum-claims-api.onrender.com |
+| **API Docs** | https://plum-claims-api.onrender.com/docs |
+
+## Quick Start (Local)
 
 ```bash
 python -m venv venv
@@ -120,19 +128,20 @@ TC012: Excluded Treatment                         → REJECTED ✅
 
 ## Deployment
 
+The system is deployed as two services:
+
+- **API (Render)**: Auto-deploys from `render.yaml` on push to `main`. FastAPI with Swagger docs at `/docs`.
+- **UI (Streamlit Cloud)**: Connected to GitHub repo, deploys `streamlit_app.py` with full pipeline.
+
+### Local Docker
+
 ```bash
-# Docker (full stack)
+# Full stack
 docker-compose up --build
 
 # Individual services
 docker build -t plum-api -f Dockerfile .
 docker build -t plum-ui -f Dockerfile.streamlit .
-
-# Railway
-railway up
-
-# Render
-# Push to GitHub → auto-deploys via render.yaml
 ```
 
 ## Documentation
