@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: plum-claims-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: PYTHONPATH=. POLICY_FILE_PATH=./policy_terms.json uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+    healthCheckPath: /health
