@@ -303,7 +303,7 @@ The system is deployed as two services:
 
 | Service | Platform | URL |
 |---------|----------|-----|
-| FastAPI API | Render (free tier) | https://plum-claims-api.onrender.com |
+| FastAPI API | Render (free tier) | https://plum-claims-api-ao0h.onrender.com |
 | Streamlit UI | Streamlit Cloud (free) | https://multi-agent-claims-processor.streamlit.app |
 
 Both auto-deploy on push to `main`.

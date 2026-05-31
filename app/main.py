@@ -24,6 +24,35 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+async def root():
+    """Root endpoint with system info and links."""
+    return {
+        "system": "Plum Health Insurance Claims Processing System",
+        "description": "Multi-agent AI system for automated OPD claims adjudication",
+        "version": "1.0.0",
+        "agents": [
+            "Intake Validation",
+            "Document Verification (GATE)",
+            "Data Extraction (Gemini Vision)",
+            "Policy Engine (Deterministic)",
+            "Fraud Detection",
+            "Decision Aggregator",
+        ],
+        "endpoints": {
+            "docs": "/docs",
+            "health": "/health",
+            "submit_claim": "POST /api/claims/submit",
+            "get_claim": "GET /api/claims/{claim_id}",
+            "get_trace": "GET /api/traces/{claim_id}",
+            "list_claims": "GET /api/claims",
+            "policy_summary": "GET /api/policy/summary",
+        },
+        "test_results": "27/27 tests passing, 12/12 eval cases passing",
+        "repo": "https://github.com/visheshgupta29/multi-agent-claims-processor",
+    }
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""

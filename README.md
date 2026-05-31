@@ -19,8 +19,8 @@ AI-powered multi-agent system for automated OPD health insurance claims processi
 | Service | URL |
 |---------|-----|
 | **Streamlit UI** | https://multi-agent-claims-processor.streamlit.app |
-| **API** | https://plum-claims-api.onrender.com |
-| **API Docs** | https://plum-claims-api.onrender.com/docs |
+| **API** | https://plum-claims-api-ao0h.onrender.com |
+| **API Docs** | https://plum-claims-api-ao0h.onrender.com/docs |
 
 ## Quick Start (Local)
 
