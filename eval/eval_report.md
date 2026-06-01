@@ -1,6 +1,6 @@
 # Evaluation Report
 
-Generated: 2026-05-31T06:42:39.754962
+Generated: 2026-06-01T18:48:37.655619
 
 ## Summary
 
@@ -87,7 +87,7 @@ Claim processing halted: The following document(s) cannot be read: Pharmacy Bill
     - ✓ documents_present: 2 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹800.
   - ✗ document_verification (FAILED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'PHARMACY_BILL'].
+    - ✓ document_completeness: All required documents present: ['PHARMACY_BILL', 'PRESCRIPTION'].
     - ✗ document_quality: The following document(s) cannot be read: Pharmacy Bill (blurry_bill.jpg). The image appears to be b
 
 ---
@@ -121,7 +121,7 @@ Claim processing halted: The uploaded documents appear to belong to different pa
     - ✓ documents_present: 2 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹1,500.
   - ✗ document_verification (FAILED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'HOSPITAL_BILL'].
+    - ✓ document_completeness: All required documents present: ['HOSPITAL_BILL', 'PRESCRIPTION'].
     - ✓ document_quality: All documents are readable.
     - ✗ patient_name_consistency: The uploaded documents appear to belong to different patients. Names found — Prescription: 'Rajesh K
 
@@ -150,11 +150,15 @@ Claim APPROVED for ₹1,350.
     - ✓ documents_present: 2 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹1,500.
   - ✓ document_verification (PASSED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'HOSPITAL_BILL'].
+    - ✓ document_completeness: All required documents present: ['HOSPITAL_BILL', 'PRESCRIPTION'].
     - ✓ document_quality: All documents are readable.
     - ✓ patient_name_consistency: All documents reference the same patient: 'Rajesh Kumar'.
   - ✓ data_extraction (PASSED) — 0ms
     - ✓ extraction_confidence: Overall extraction confidence: 0.95
+  - ✓ extraction_validation (PASSED) — 3ms
+    - ✓ extracted_patient_name_consistency: All 2 document(s) reference the same patient: 'Rajesh Kumar'.
+    - ✓ document_date_proximity: All dated documents fall within 0 day(s) of each other.
+    - ✓ category_required_fields: All required fields for CONSULTATION present in extracted data.
   - ✓ policy_evaluation (PASSED) — 0ms
     - ✓ category_coverage: Category 'CONSULTATION' is covered.
     - ✓ submission_deadline: Claim assumed submitted within 30-day deadline of treatment date 2024-11-01.
@@ -197,11 +201,15 @@ Claim REJECTED. Reason(s): WAITING_PERIOD.
     - ✓ documents_present: 2 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹3,000.
   - ✓ document_verification (PASSED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'HOSPITAL_BILL'].
+    - ✓ document_completeness: All required documents present: ['HOSPITAL_BILL', 'PRESCRIPTION'].
     - ✓ document_quality: All documents are readable.
     - ✓ patient_name_consistency: All documents reference the same patient: 'Vikram Joshi'.
   - ✓ data_extraction (PASSED) — 0ms
     - ✓ extraction_confidence: Overall extraction confidence: 0.95
+  - ✓ extraction_validation (PASSED) — 0ms
+    - ✓ extracted_patient_name_consistency: All 2 document(s) reference the same patient: 'Vikram Joshi'.
+    - ✓ document_date_proximity: Only 1 of 2 document(s) had an extractable date — proximity check skipped.
+    - ✓ category_required_fields: All required fields for CONSULTATION present in extracted data.
   - ✓ policy_evaluation (PASSED) — 0ms
     - ✓ category_coverage: Category 'CONSULTATION' is covered.
     - ✓ submission_deadline: Claim assumed submitted within 30-day deadline of treatment date 2024-10-15.
@@ -250,6 +258,10 @@ Some line items were excluded:
     - ✓ patient_name_consistency: Insufficient documents with patient names to cross-validate (or names match).
   - ✓ data_extraction (PASSED) — 0ms
     - ✓ extraction_confidence: Overall extraction confidence: 0.95
+  - ✗ extraction_validation (FAILED) — 0ms
+    - ✓ extracted_patient_name_consistency: Only 1 of 1 document(s) had an extracted patient name — cross-validation skipped.
+    - ✓ document_date_proximity: Only 0 of 1 document(s) had an extractable date — proximity check skipped.
+    - ✗ category_required_fields: DENTAL claim is missing required extracted field(s): primary_diagnosis. Cannot auto-decide; routing 
   - ✓ policy_evaluation (PASSED) — 0ms
     - ✓ category_coverage: Category 'DENTAL' is covered.
     - ✓ submission_deadline: Claim assumed submitted within 30-day deadline of treatment date 2024-10-15.
@@ -293,11 +305,15 @@ Claim REJECTED. Reason(s): PRE_AUTH_MISSING.
     - ✓ documents_present: 3 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹15,000.
   - ✓ document_verification (PASSED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'LAB_REPORT', 'HOSPITAL_BILL'].
+    - ✓ document_completeness: All required documents present: ['LAB_REPORT', 'HOSPITAL_BILL', 'PRESCRIPTION'].
     - ✓ document_quality: All documents are readable.
     - ✓ patient_name_consistency: Insufficient documents with patient names to cross-validate (or names match).
   - ✓ data_extraction (PASSED) — 0ms
     - ✓ extraction_confidence: Overall extraction confidence: 0.95
+  - ✗ extraction_validation (FAILED) — 0ms
+    - ✓ extracted_patient_name_consistency: Only 0 of 3 document(s) had an extracted patient name — cross-validation skipped.
+    - ✓ document_date_proximity: Only 0 of 3 document(s) had an extractable date — proximity check skipped.
+    - ✗ category_required_fields: DIAGNOSTIC claim is missing required extracted field(s): primary_patient_name. Cannot auto-decide; r
   - ✓ policy_evaluation (PASSED) — 0ms
     - ✓ category_coverage: Category 'DIAGNOSTIC' is covered.
     - ✓ submission_deadline: Claim assumed submitted within 30-day deadline of treatment date 2024-11-02.
@@ -337,11 +353,15 @@ Claim REJECTED. Reason(s): PER_CLAIM_EXCEEDED.
     - ✓ documents_present: 2 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹7,500.
   - ✓ document_verification (PASSED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'HOSPITAL_BILL'].
+    - ✓ document_completeness: All required documents present: ['HOSPITAL_BILL', 'PRESCRIPTION'].
     - ✓ document_quality: All documents are readable.
     - ✓ patient_name_consistency: Insufficient documents with patient names to cross-validate (or names match).
   - ✓ data_extraction (PASSED) — 0ms
     - ✓ extraction_confidence: Overall extraction confidence: 0.95
+  - ✗ extraction_validation (FAILED) — 0ms
+    - ✓ extracted_patient_name_consistency: Only 0 of 2 document(s) had an extracted patient name — cross-validation skipped.
+    - ✓ document_date_proximity: Only 0 of 2 document(s) had an extractable date — proximity check skipped.
+    - ✗ category_required_fields: CONSULTATION claim is missing required extracted field(s): primary_patient_name. Cannot auto-decide;
   - ✓ policy_evaluation (PASSED) — 0ms
     - ✓ category_coverage: Category 'CONSULTATION' is covered.
     - ✓ submission_deadline: Claim assumed submitted within 30-day deadline of treatment date 2024-10-20.
@@ -386,11 +406,15 @@ Claim routed to MANUAL REVIEW.
     - ✓ documents_present: 2 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹4,800.
   - ✓ document_verification (PASSED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'HOSPITAL_BILL'].
+    - ✓ document_completeness: All required documents present: ['HOSPITAL_BILL', 'PRESCRIPTION'].
     - ✓ document_quality: All documents are readable.
     - ✓ patient_name_consistency: Insufficient documents with patient names to cross-validate (or names match).
   - ✓ data_extraction (PASSED) — 0ms
     - ✓ extraction_confidence: Overall extraction confidence: 0.95
+  - ✗ extraction_validation (FAILED) — 0ms
+    - ✓ extracted_patient_name_consistency: Only 0 of 2 document(s) had an extracted patient name — cross-validation skipped.
+    - ✓ document_date_proximity: Only 0 of 2 document(s) had an extractable date — proximity check skipped.
+    - ✗ category_required_fields: CONSULTATION claim is missing required extracted field(s): primary_patient_name. Cannot auto-decide;
   - ✓ policy_evaluation (PASSED) — 0ms
     - ✓ category_coverage: Category 'CONSULTATION' is covered.
     - ✓ submission_deadline: Claim assumed submitted within 30-day deadline of treatment date 2024-10-30.
@@ -435,11 +459,15 @@ Claim APPROVED for ₹3,240.
     - ✓ documents_present: 2 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹4,500.
   - ✓ document_verification (PASSED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'HOSPITAL_BILL'].
+    - ✓ document_completeness: All required documents present: ['HOSPITAL_BILL', 'PRESCRIPTION'].
     - ✓ document_quality: All documents are readable.
     - ✓ patient_name_consistency: All documents reference the same patient: 'Deepak Shah'.
   - ✓ data_extraction (PASSED) — 0ms
     - ✓ extraction_confidence: Overall extraction confidence: 0.95
+  - ✓ extraction_validation (PASSED) — 0ms
+    - ✓ extracted_patient_name_consistency: All 2 document(s) reference the same patient: 'Deepak Shah'.
+    - ✓ document_date_proximity: Only 0 of 2 document(s) had an extractable date — proximity check skipped.
+    - ✓ category_required_fields: All required fields for CONSULTATION present in extracted data.
   - ✓ policy_evaluation (PASSED) — 0ms
     - ✓ category_coverage: Category 'CONSULTATION' is covered.
     - ✓ submission_deadline: Claim assumed submitted within 30-day deadline of treatment date 2024-11-03.
@@ -490,10 +518,14 @@ Manual review is recommended due to incomplete processing.
     - ✓ documents_present: 2 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹4,000.
   - ✓ document_verification (PASSED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'HOSPITAL_BILL'].
+    - ✓ document_completeness: All required documents present: ['HOSPITAL_BILL', 'PRESCRIPTION'].
     - ✓ document_quality: All documents are readable.
     - ✓ patient_name_consistency: Insufficient documents with patient names to cross-validate (or names match).
   - ⚠ data_extraction (ERROR) — 0ms
+  - ✗ extraction_validation (FAILED) — 0ms
+    - ✓ extracted_patient_name_consistency: Only 0 of 2 document(s) had an extracted patient name — cross-validation skipped.
+    - ✓ document_date_proximity: Only 0 of 2 document(s) had an extractable date — proximity check skipped.
+    - ✗ category_required_fields: ALTERNATIVE_MEDICINE claim is missing required extracted field(s): primary_patient_name. Cannot auto
   - ✓ policy_evaluation (PASSED) — 0ms
     - ✓ category_coverage: Category 'ALTERNATIVE_MEDICINE' is covered.
     - ✓ submission_deadline: Claim assumed submitted within 30-day deadline of treatment date 2024-10-28.
@@ -533,11 +565,15 @@ Claim REJECTED. Reason(s): EXCLUDED_CONDITION.
     - ✓ documents_present: 2 document(s) attached.
     - ✓ amount_positive: Claimed amount: ₹8,000.
   - ✓ document_verification (PASSED) — 0ms
-    - ✓ document_completeness: All required documents present: ['PRESCRIPTION', 'HOSPITAL_BILL'].
+    - ✓ document_completeness: All required documents present: ['HOSPITAL_BILL', 'PRESCRIPTION'].
     - ✓ document_quality: All documents are readable.
     - ✓ patient_name_consistency: Insufficient documents with patient names to cross-validate (or names match).
   - ✓ data_extraction (PASSED) — 0ms
     - ✓ extraction_confidence: Overall extraction confidence: 0.95
+  - ✗ extraction_validation (FAILED) — 0ms
+    - ✓ extracted_patient_name_consistency: Only 0 of 2 document(s) had an extracted patient name — cross-validation skipped.
+    - ✓ document_date_proximity: Only 0 of 2 document(s) had an extractable date — proximity check skipped.
+    - ✗ category_required_fields: CONSULTATION claim is missing required extracted field(s): primary_patient_name. Cannot auto-decide;
   - ✓ policy_evaluation (PASSED) — 0ms
     - ✓ category_coverage: Category 'CONSULTATION' is covered.
     - ✓ submission_deadline: Claim assumed submitted within 30-day deadline of treatment date 2024-10-18.

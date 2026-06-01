@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A multi-agent AI system for automated OPD health insurance claims processing built for the Plum AI Engineer assignment. Processes claims through a 6-agent pipeline: Intake → Document Verification → Extraction → Policy Engine → Fraud Detection → Decision Aggregation.
+A multi-agent AI system for automated OPD health insurance claims processing built for the Plum AI Engineer assignment. Processes claims through a 7-agent pipeline: Intake → Document Verification → Extraction → Extraction Validation → Policy Engine → Fraud Detection → Decision Aggregation.
 
 ## Current Status
 
@@ -31,6 +31,7 @@ A multi-agent AI system for automated OPD health insurance claims processing bui
 | `app/agents/policy_engine.py` | Deterministic rule engine — most complex agent |
 | `app/agents/document_verification.py` | Early halt for doc problems |
 | `app/agents/extraction.py` | Groq Vision + test-mode extraction |
+| `app/agents/extraction_validation.py` | Post-extraction coherence checks (patient name, date proximity, category-required fields) |
 | `app/agents/fraud_detection.py` | Pattern-based fraud signals → MANUAL_REVIEW |
 | `app/agents/decision_aggregator.py` | Combines policy + fraud into final decision |
 | `app/pipeline/graph.py` | LangGraph orchestrator (process_claim function) |

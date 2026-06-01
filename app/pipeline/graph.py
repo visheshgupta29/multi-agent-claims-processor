@@ -32,6 +32,10 @@ from app.policy.loader import load_policy
 from app.agents.intake import validate_intake, IntakeResult
 from app.agents.document_verification import verify_documents, DocumentVerificationResult
 from app.agents.extraction import extract_from_documents, ExtractionComponentError
+from app.agents.extraction_validation import (
+    validate_extraction,
+    ExtractionValidationResult,
+)
 from app.agents.policy_engine import evaluate_claim, PolicyEngineResult
 from app.agents.fraud_detection import detect_fraud, FraudDetectionResult
 from app.agents.decision_aggregator import aggregate_decision
@@ -152,6 +156,32 @@ async def process_claim(request: ClaimRequest) -> ClaimDecision:
         component_failures.append(f"Data extraction failed: {str(e)}")
         extracted_data = _build_partial_extraction(request)
 
+    # --- Step 3b: Extraction Validation (coherence checks) ---
+    extraction_validation = ExtractionValidationResult()
+    step_start = time.time()
+    try:
+        extraction_validation = validate_extraction(request, extracted_data)
+        step = TraceStep(
+            step_name="extraction_validation",
+            status=StepStatus.PASSED if extraction_validation.passed else StepStatus.FAILED,
+            started_at=datetime.utcnow(),
+            duration_ms=int((time.time() - step_start) * 1000),
+            input_summary={
+                "document_count": len(extracted_data.documents),
+                "category": request.claim_category.value,
+            },
+            output_summary={
+                "passed": extraction_validation.passed,
+                "flag_count": len(extraction_validation.flags),
+            },
+            checks_performed=extraction_validation.checks,
+            notes=extraction_validation.flags,
+        )
+        trace_steps.append(step)
+    except Exception as e:
+        trace_steps.append(_error_step("extraction_validation", str(e), step_start))
+        component_failures.append(f"Extraction validation failed: {str(e)}")
+
     # --- Step 4: Policy Engine ---
     policy_result = PolicyEngineResult()
     step_start = time.time()
@@ -225,6 +255,7 @@ async def process_claim(request: ClaimRequest) -> ClaimDecision:
         extracted_data=extracted_data,
         trace_steps=trace_steps,
         component_failures=component_failures,
+        extraction_validation_flags=extraction_validation.flags,
     )
 
     # Update trace with total duration

@@ -25,6 +25,7 @@ def aggregate_decision(
     extracted_data: ExtractedClaimData,
     trace_steps: list[TraceStep],
     component_failures: list[str] = None,
+    extraction_validation_flags: list[str] = None,
 ) -> ClaimDecision:
     """Aggregate all results into a final claim decision.
 
@@ -37,6 +38,7 @@ def aggregate_decision(
     Component failures reduce confidence and may recommend manual review.
     """
     component_failures = component_failures or []
+    extraction_validation_flags = extraction_validation_flags or []
     review_flags: list[str] = []
 
     # Start with policy engine decision
@@ -49,8 +51,28 @@ def aggregate_decision(
         decision = Decision.MANUAL_REVIEW
         confidence = min(confidence, 0.6)
 
-    # Data quality override: low confidence + missing key extracted fields.
-    if _requires_manual_review_for_extraction(extracted_data):
+    # Extraction validation override: name mismatch, date mismatch, or
+    # missing category-required fields. Only override when the policy engine
+    # would otherwise auto-APPROVE — definitive REJECTED/PARTIAL outcomes
+    # (with concrete line-item rationale) are still trusted. Also skipped when
+    # a component already failed: the failure path drops confidence and sets
+    # manual_review_recommended on its own, so we don't double-penalize.
+    if (
+        extraction_validation_flags
+        and decision == Decision.APPROVED
+        and not component_failures
+    ):
+        decision = Decision.MANUAL_REVIEW
+        confidence = min(confidence, 0.5)
+        review_flags.extend(extraction_validation_flags)
+
+    # Data quality override: low overall extraction confidence with missing key fields.
+    # Same scope rule — only override an auto-APPROVE, and not when a component failed.
+    if (
+        decision == Decision.APPROVED
+        and not component_failures
+        and _requires_manual_review_for_extraction(extracted_data)
+    ):
         decision = Decision.MANUAL_REVIEW
         confidence = min(confidence, 0.5)
         review_flags.append(
@@ -99,7 +121,9 @@ def aggregate_decision(
         policy_checks=policy_result.checks,
         fraud_signals=fraud_result.signals,
         manual_review_recommended=(
-            fraud_result.requires_manual_review or len(component_failures) > 0 or len(review_flags) > 0
+            fraud_result.requires_manual_review
+            or len(component_failures) > 0
+            or len(review_flags) > 0
         ),
         trace=trace,
     )

@@ -126,7 +126,58 @@ async def extract_from_documents(
 
 ---
 
-## 4. Policy Engine
+## 4. Extraction Validation Agent
+
+**Module:** `app/agents/extraction_validation.py`
+
+### Interface
+
+```python
+def validate_extraction(
+    request: ClaimRequest,
+    extracted_data: ExtractedClaimData,
+) -> ExtractionValidationResult
+```
+
+### Input
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `request` | `ClaimRequest` | Original claim request (used for `claim_category`) |
+| `extracted_data` | `ExtractedClaimData` | Output of the extraction agent |
+
+### Output: `ExtractionValidationResult`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `passed` | `bool` | True iff every coherence check passed |
+| `flags` | `list[str]` | Human-readable failure messages (surfaced in final explanation) |
+| `checks` | `list[Check]` | Detailed PASS/FAIL records for the trace |
+
+### Checks Performed
+
+| Check | Purpose | FAIL trigger |
+|-------|---------|--------------|
+| `extracted_patient_name_consistency` | Documents belong to the same patient (using extracted per-doc names, not user-supplied metadata) | Two or more documents have non-empty, non-matching `patient_name` |
+| `document_date_proximity` | Documents represent a single encounter | Dated documents span > 30 days |
+| `category_required_fields` | Category-mandatory extracted fields are present | Any required field for the claim category is missing (e.g. CONSULTATION without `primary_diagnosis`) |
+
+`CATEGORY_REQUIRED_FIELDS` (in the module) defines the per-category required-field map. CONSULTATION, DENTAL, and ALTERNATIVE_MEDICINE require `primary_diagnosis`, `primary_patient_name`, and `total_billed_amount`; DIAGNOSTIC / PHARMACY / VISION require `primary_patient_name` and `total_billed_amount`.
+
+### Pipeline Behavior
+
+- Never halts. Never auto-rejects.
+- Flags are passed to the decision aggregator, which forces `MANUAL_REVIEW` **only when** the policy engine would otherwise auto-`APPROVE` **and** no upstream component failed.
+- Definitive `REJECTED` / `PARTIAL` outcomes (with concrete line-item rationale) are still trusted.
+- The graceful-degradation path (component failure) is not double-penalized.
+
+### Errors
+
+- Does not raise. Validation errors are encoded into the `flags` list.
+
+---
+
+## 5. Policy Engine
 
 **Module:** `app/agents/policy_engine.py`
 
@@ -187,7 +238,7 @@ def evaluate_claim(
 
 ---
 
-## 5. Fraud Detection Agent
+## 6. Fraud Detection Agent
 
 **Module:** `app/agents/fraud_detection.py`
 
@@ -230,7 +281,7 @@ def detect_fraud(request: ClaimRequest, policy: PolicyTerms) -> FraudDetectionRe
 
 ---
 
-## 6. Decision Aggregator
+## 7. Decision Aggregator
 
 **Module:** `app/agents/decision_aggregator.py`
 
@@ -284,7 +335,7 @@ All upstream results plus the accumulated trace.
 
 ---
 
-## 7. Pipeline Orchestrator
+## 8. Pipeline Orchestrator
 
 **Module:** `app/pipeline/graph.py`
 
@@ -324,7 +375,7 @@ Intake → [passes?] → Document Verification → [halt?] → Extraction → Po
 
 ---
 
-## 8. Trace Store
+## 9. Trace Store
 
 **Module:** `app/services/trace_store.py`
 
@@ -352,7 +403,7 @@ class TraceStore:
 
 ---
 
-## 9. FastAPI Application
+## 10. FastAPI Application
 
 **Module:** `app/main.py`
 

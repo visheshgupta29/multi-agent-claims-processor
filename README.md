@@ -6,7 +6,7 @@ AI-powered multi-agent system for automated OPD health insurance claims processi
 
 ### Highlights
 
-- **6-agent pipeline**: Intake → Document Verification → Extraction → Policy Engine → Fraud Detection → Decision Aggregation
+- **7-agent pipeline**: Intake → Document Verification → Extraction → Extraction Validation → Policy Engine → Fraud Detection → Decision Aggregation
 - **27 automated tests** (unit + integration + API endpoint tests)
 - **12/12 eval cases** passing with full traces
 - **Deterministic policy engine** — no LLM for financial decisions
@@ -61,6 +61,7 @@ streamlit run streamlit_app.py
 │   │   ├── intake.py              # Member eligibility validation
 │   │   ├── document_verification.py  # Early halt for doc issues (GATE)
 │   │   ├── extraction.py         # Groq Vision data extraction
+│   │   ├── extraction_validation.py  # Post-extraction coherence checks (name/date/fields)
 │   │   ├── policy_engine.py      # Deterministic rule engine (no LLM)
 │   │   ├── fraud_detection.py    # Pattern-based fraud signals
 │   │   └── decision_aggregator.py # Final decision builder

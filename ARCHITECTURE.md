@@ -15,14 +15,15 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 ┌─────────────────────────────────────────────────────────────────────┐
 │                      Pipeline Orchestrator (LangGraph)               │
 │                                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  ┌───────┐  │
-│  │  Intake  │→ │  Doc     │→ │Extraction│→ │ Policy │→ │ Fraud │  │
-│  │Validation│  │  Verify  │  │   (Groq) │  │ Engine │  │Detect │  │
-│  └──────────┘  └──────────┘  └──────────┘  └────────┘  └───────┘  │
-│                                                    │         │      │
-│                                                    ▼         ▼      │
-│                                            ┌──────────────────┐     │
-│                                            │    Aggregator    │     │
+│  ┌────────┐  ┌────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  ┌───────┐  │
+│  │ Intake │→ │  Doc   │→ │Extraction│→ │Extraction│→ │ Policy │→ │ Fraud │  │
+│  │Validate│  │ Verify │  │  (Groq)  │  │Validation│  │ Engine │  │Detect │  │
+│  └────────┘  └────────┘  └──────────┘  └──────────┘  └────────┘  └───────┘  │
+│                                                              │         │      │
+│                                                              ▼         ▼      │
+│                                                      ┌──────────────────┐     │
+│                                                      │    Aggregator    │     │
+│                                                      └──────────────────┘     │
 │                                            └──────────────────┘     │
 └─────────────────────────────────────────────────────────────────────┘
                                    │
@@ -81,7 +82,18 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 
 **Failure mode**: Raises `ExtractionComponentError` which the pipeline catches. Processing continues with partial data and reduced confidence.
 
-#### 4. Policy Engine (`app/agents/policy_engine.py`)
+#### 4. Extraction Validation (`app/agents/extraction_validation.py`)
+
+**Purpose**: Post-extraction coherence layer. Catches cases where individual documents look valid in isolation but the *set* of documents doesn't represent a single, well-formed medical encounter. Runs **after** extraction so it can compare extracted per-document fields, not just user-supplied metadata.
+
+**Checks**:
+- `extracted_patient_name_consistency` — patient name extracted from every named document must match.
+- `document_date_proximity` — extracted document dates must fall within a 30-day window of each other.
+- `category_required_fields` — category-mandatory extracted fields must be present (e.g. CONSULTATION/DENTAL/ALT-MED require `primary_diagnosis`, `primary_patient_name`, `total_billed_amount`).
+
+**Key behavior**: Never halts the pipeline and never auto-rejects. Failures are surfaced as flags. The aggregator escalates an *auto-APPROVE* to `MANUAL_REVIEW` when flags are present and no upstream component has already failed — definitive `REJECTED` / `PARTIAL` outcomes from the policy engine are still trusted, and the graceful-degradation path (component failure) is not double-penalized.
+
+#### 5. Policy Engine (`app/agents/policy_engine.py`)
 
 **Purpose**: Deterministic rule engine. Applies all policy rules from `policy_terms.json` without LLM involvement.
 
@@ -104,7 +116,7 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 - Per-claim limit uses `max(global_limit, category_sub_limit)` as effective cap
 - Network discount and copay are applied multiplicatively: `amount × (1 - discount) × (1 - copay)`
 
-#### 5. Fraud Detection (`app/agents/fraud_detection.py`)
+#### 6. Fraud Detection (`app/agents/fraud_detection.py`)
 
 **Purpose**: Pattern-based fraud signal detection. Never auto-rejects — only routes to manual review.
 
@@ -113,25 +125,25 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 - High-value claims above auto-review threshold
 - Monthly claims frequency
 
-#### 6. Decision Aggregator (`app/agents/decision_aggregator.py`)
+#### 7. Decision Aggregator (`app/agents/decision_aggregator.py`)
 
-**Purpose**: Combines policy engine and fraud detection results into a final decision.
+**Purpose**: Combines policy engine, fraud detection, and extraction-validation results into a final decision.
 
 **Priority order**:
 1. Fraud signals → MANUAL_REVIEW (overrides policy)
 2. Policy REJECTED → REJECTED
 3. Policy PARTIAL → PARTIAL
-4. Policy APPROVED → APPROVED
+4. Policy APPROVED → APPROVED, **unless** extraction-validation flags are present and no component failure occurred → MANUAL_REVIEW
 
-**Also**: Adjusts confidence for component failures, builds human-readable explanation.
+**Also**: Adjusts confidence for component failures, surfaces extraction-validation flags in the explanation, builds human-readable explanation.
 
-#### 7. Pipeline Orchestrator (`app/pipeline/graph.py`)
+#### 8. Pipeline Orchestrator (`app/pipeline/graph.py`)
 
 **Purpose**: Coordinates the multi-agent flow. Handles errors at each step, builds trace, manages early-halt logic.
 
 **LangGraph integration**: Uses a state graph with conditional edges. Document verification failure halts the graph. Extraction failure triggers graceful degradation.
 
-#### 8. Trace Store (`app/services/trace_store.py`)
+#### 9. Trace Store (`app/services/trace_store.py`)
 
 **Purpose**: SQLite-backed persistence for claim decisions and traces. Supports querying by claim ID, member ID, status.
 
@@ -176,6 +188,15 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 4. **Caching**: Redis cache for policy lookups and member roster (reload on policy changes)
 5. **Horizontal scaling**: Stateless workers behind load balancer; each agent could be a separate microservice
 6. **ML-based fraud**: Replace rule-based fraud with trained anomaly detection model
+
+---
+
+### Future Improvements
+
+- **Soft LLM coherence layer for `extraction_validation`.** Today the agent applies three deterministic checks (extracted name consistency, date proximity, category-required fields). A natural next step is a fourth, *advisory* check that asks a small model (e.g. `llama-3.1-8b-instant`) "Do these extracted documents describe the same medical encounter?" and returns `{coherent: bool, reason: str}`. The result would not auto-reject \u2014 it would simply add a flag and downgrade confidence, consistent with the current "no LLM in policy" design. Deferred because the deterministic checks already kill the random-document scenario and the LLM call adds latency and a quota dependency to every claim.
+- **Cross-document item coherence.** Bill line items should overlap with prescribed medications or ordered tests. Even a simple "\u22651 token overlap" rule would tighten the pharmacy / diagnostic flows.
+- **Provider \u2194 prescriber cross-check.** The doctor on the prescription should be plausibly linked to the provider on the bill; mismatch \u2192 fraud signal.
+- **Async pipeline** (Celery / BullMQ) and **PostgreSQL trace store** for production scale.
 
 ---
 
