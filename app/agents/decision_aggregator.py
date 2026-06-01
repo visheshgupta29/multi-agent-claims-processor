@@ -10,7 +10,6 @@ from app.models.claim import (
     ClaimTrace,
     Decision,
     TraceStep,
-    StepStatus,
     TraceStatus,
     ExtractedClaimData,
 )
@@ -38,6 +37,7 @@ def aggregate_decision(
     Component failures reduce confidence and may recommend manual review.
     """
     component_failures = component_failures or []
+    review_flags: list[str] = []
 
     # Start with policy engine decision
     decision = policy_result.decision
@@ -49,6 +49,14 @@ def aggregate_decision(
         decision = Decision.MANUAL_REVIEW
         confidence = min(confidence, 0.6)
 
+    # Data quality override: low confidence + missing key extracted fields.
+    if _requires_manual_review_for_extraction(extracted_data):
+        decision = Decision.MANUAL_REVIEW
+        confidence = min(confidence, 0.5)
+        review_flags.append(
+            "Low extraction confidence with missing key fields (diagnosis, patient name, billed total)."
+        )
+
     # Component failure handling
     if component_failures:
         confidence -= 0.2 * len(component_failures)
@@ -59,7 +67,12 @@ def aggregate_decision(
 
     # Build explanation
     explanation = _build_explanation(
-        decision, policy_result, fraud_result, approved_amount, component_failures
+        decision,
+        policy_result,
+        fraud_result,
+        approved_amount,
+        component_failures,
+        review_flags,
     )
 
     # Build the trace
@@ -86,7 +99,7 @@ def aggregate_decision(
         policy_checks=policy_result.checks,
         fraud_signals=fraud_result.signals,
         manual_review_recommended=(
-            fraud_result.requires_manual_review or len(component_failures) > 0
+            fraud_result.requires_manual_review or len(component_failures) > 0 or len(review_flags) > 0
         ),
         trace=trace,
     )
@@ -98,6 +111,7 @@ def _build_explanation(
     fraud_result: FraudDetectionResult,
     approved_amount: float | None,
     component_failures: list[str],
+    review_flags: list[str],
 ) -> str:
     """Build a human-readable explanation of the decision."""
     parts = []
@@ -135,4 +149,26 @@ def _build_explanation(
             parts.append(f"  - {failure}")
         parts.append("Manual review is recommended due to incomplete processing.")
 
+    if review_flags:
+        parts.append("")
+        parts.append("⚠ Data quality flags:")
+        for flag in review_flags:
+            parts.append(f"  - {flag}")
+
     return "\n".join(parts)
+
+
+def _requires_manual_review_for_extraction(extracted_data: ExtractedClaimData) -> bool:
+    """Require manual review when extraction quality is too low and key fields are missing."""
+    if extracted_data.overall_confidence >= 0.6:
+        return False
+
+    missing_key_fields = 0
+    if not extracted_data.primary_diagnosis:
+        missing_key_fields += 1
+    if not extracted_data.primary_patient_name:
+        missing_key_fields += 1
+    if extracted_data.total_billed_amount is None:
+        missing_key_fields += 1
+
+    return missing_key_fields >= 2
