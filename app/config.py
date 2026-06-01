@@ -1,13 +1,14 @@
-from pathlib import Path
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    gemini_api_key: str = ""
+    groq_api_key: str = ""
     database_path: str = "./data/traces.db"
     policy_file_path: str = "./policy_terms.json"
-    gemini_flash_model: str = "gemini-2.0-flash"
-    gemini_pro_model: str = "gemini-2.5-flash"
+    groq_vision_model: str = "meta-llama/llama-4-scout-17b-16e-instruct"
+    groq_text_model: str = "llama-3.1-8b-instant"
+    groq_reasoning_model: str = "openai/gpt-oss-20b"
+    groq_service_tier: str = "on_demand"
     max_retries: int = 3
     request_timeout: int = 30
 

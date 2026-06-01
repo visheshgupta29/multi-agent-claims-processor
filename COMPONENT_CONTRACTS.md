@@ -114,7 +114,7 @@ async def extract_from_documents(
 ### Extraction Modes
 
 1. **Pre-parsed content** (`doc.content` is set): Extracts from dict directly. Confidence: 0.95.
-2. **Gemini Vision** (`doc.file_data` is set): Sends image to Gemini API. Confidence: model-reported.
+2. **Groq Vision** (`doc.file_data` is set): Sends image to Groq API. Confidence: model-reported.
 3. **No data available**: Returns minimal extraction with confidence 0.5.
 
 ### Errors
@@ -122,7 +122,7 @@ async def extract_from_documents(
 | Error | When | Pipeline Behavior |
 |-------|------|-------------------|
 | `ExtractionComponentError` | Simulated failure or unrecoverable extraction error | Pipeline catches, uses partial data, reduces confidence |
-| `GeminiError` | API timeout/failure after 3 retries | Handled internally, returns low-confidence result |
+| `GroqError` | API timeout/failure after 3 retries | Handled internally, returns low-confidence result |
 
 ---
 

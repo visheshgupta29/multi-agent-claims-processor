@@ -42,7 +42,7 @@ async def root():
         "agents": [
             "Intake Validation",
             "Document Verification (GATE)",
-            "Data Extraction (Gemini Vision)",
+            "Data Extraction (Groq Vision)",
             "Policy Engine (Deterministic)",
             "Fraud Detection",
             "Decision Aggregator",

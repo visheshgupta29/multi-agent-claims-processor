@@ -17,7 +17,7 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 │                                                                     │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  ┌───────┐  │
 │  │  Intake  │→ │  Doc     │→ │Extraction│→ │ Policy │→ │ Fraud │  │
-│  │Validation│  │  Verify  │  │  (Gemini)│  │ Engine │  │Detect │  │
+│  │Validation│  │  Verify  │  │   (Groq) │  │ Engine │  │Detect │  │
 │  └──────────┘  └──────────┘  └──────────┘  └────────┘  └───────┘  │
 │                                                    │         │      │
 │                                                    ▼         ▼      │
@@ -75,7 +75,7 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 
 #### 3. Data Extraction (`app/agents/extraction.py`)
 
-**Purpose**: Extract structured data from documents. Uses Gemini Vision for real documents; uses pre-parsed content in test mode.
+**Purpose**: Extract structured data from documents. Uses Groq Vision for real documents; uses pre-parsed content in test mode.
 
 **Outputs**: Patient name, diagnosis, treatment, line items, amounts, doctor details, confidence score.
 
@@ -155,9 +155,9 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 |----------|-----------|
 | SQLite over Postgres | Simpler deployment, sufficient for demo. Would swap for production. |
 | No LLM in policy engine | Determinism > intelligence for financial decisions. LLMs hallucinate; rules don't. |
-| Gemini free tier | Cost-free, sufficient for OCR/extraction. Would use dedicated OCR (Google Document AI) in production. |
+| Groq free tier | Cost-effective, sufficient for OCR/extraction. Would use dedicated OCR (Google Document AI) in production. |
 | Synchronous pipeline | Simpler debugging and tracing. Would add async queue (Celery/BullMQ) for 10x scale. |
-| Pre-parsed content for tests | Avoids Gemini API calls in CI. Real flow uses Vision API. |
+| Pre-parsed content for tests | Avoids external API calls in CI. Real flow uses Vision API. |
 
 ---
 
@@ -165,7 +165,7 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 
 **Current limitations**:
 - SQLite doesn't support concurrent writes well
-- No retry logic for transient Gemini failures beyond basic retries
+- No retry logic for transient vision API failures beyond basic retries
 - Submission deadline check assumes same-day submission (no explicit submission_date field)
 - Waiting period keyword matching could miss edge cases
 
@@ -267,7 +267,7 @@ A multi-agent AI system that processes OPD health insurance claims end-to-end: f
 | API | FastAPI | Async-native, auto-docs, Pydantic validation |
 | UI | Streamlit | Rapid prototyping, built-in state management |
 | Orchestration | LangGraph | State graph with conditional edges, built for agent workflows |
-| LLM | Google Gemini (2.0-flash, 2.5-flash) | Free tier, vision capability, fast |
+| LLM | Groq (Llama 4 Scout + Llama/GPT-OSS text models) | Low-latency, OpenAI-compatible API, strong multimodal support |
 | Models | Pydantic v2 | Runtime validation, serialization, IDE support |
 | Storage | SQLite + aiosqlite | Zero-config, sufficient for demo |
 | Testing | pytest + pytest-asyncio | Async test support, clean fixtures |
@@ -282,7 +282,7 @@ venv\Scripts\activate       # Windows
 pip install -r requirements.txt
 
 # Set API key
-echo "GEMINI_API_KEY=your-key-here" > .env
+echo "GROQ_API_KEY=your-key-here" > .env
 
 # Run API
 PYTHONPATH=. uvicorn app.main:app --reload
@@ -354,5 +354,5 @@ Tests run without API keys (use pre-parsed content). CI-ready.
 | PostgreSQL | SQLite sufficient for demo; would switch at production scale |
 | LangChain agents with tool-calling | Too much abstraction; simple state graph is more debuggable |
 | Celery task queue | Synchronous pipeline is simpler to trace and debug |
-| OpenAI GPT-4V over Gemini | Cost barrier for demo; Gemini free tier is sufficient |
+| OpenAI GPT-4V over Groq vision stack | Cost barrier for demo; current Groq setup is sufficient |
 

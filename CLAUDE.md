@@ -18,7 +18,7 @@ A multi-agent AI system for automated OPD health insurance claims processing bui
 ## Tech Stack
 
 - Python 3.12, FastAPI, Pydantic v2, pydantic-settings
-- Google Gemini (2.0-flash for extraction, 2.5-flash for reasoning) — free tier
+- Groq (Llama 4 Scout for vision extraction, Llama/GPT-OSS for text/reasoning)
 - LangGraph for pipeline orchestration
 - SQLite (aiosqlite) for trace persistence
 - Streamlit for UI
@@ -30,7 +30,7 @@ A multi-agent AI system for automated OPD health insurance claims processing bui
 |------|---------|
 | `app/agents/policy_engine.py` | Deterministic rule engine — most complex agent |
 | `app/agents/document_verification.py` | Early halt for doc problems |
-| `app/agents/extraction.py` | Gemini Vision + test-mode extraction |
+| `app/agents/extraction.py` | Groq Vision + test-mode extraction |
 | `app/agents/fraud_detection.py` | Pattern-based fraud signals → MANUAL_REVIEW |
 | `app/agents/decision_aggregator.py` | Combines policy + fraud into final decision |
 | `app/pipeline/graph.py` | LangGraph orchestrator (process_claim function) |
@@ -38,7 +38,7 @@ A multi-agent AI system for automated OPD health insurance claims processing bui
 | `app/models/claim.py` | All Pydantic models |
 | `app/models/policy.py` | Policy data models |
 | `app/policy/loader.py` | Loads policy_terms.json |
-| `app/services/gemini.py` | Gemini API client with retry |
+| `app/services/groq.py` | Groq API client with retry |
 | `app/services/trace_store.py` | SQLite persistence |
 | `app/config.py` | Settings via pydantic-settings |
 | `eval/runner.py` | Runs all 12 test cases, generates report |
@@ -112,7 +112,7 @@ npm install -g @railway/cli
 railway login
 railway init
 railway up
-# Set GEMINI_API_KEY in Railway dashboard
+# Set GROQ_API_KEY in Railway dashboard
 ```
 
 **Render:**
@@ -123,7 +123,7 @@ railway up
 **For Streamlit Cloud (UI only, free):**
 - Push to GitHub
 - Connect at share.streamlit.io
-- Add GEMINI_API_KEY as a secret
+- Add GROQ_API_KEY as a secret
 
 ### 5. Git Init with Clean Commit History (HIGH — explicitly required)
 
@@ -137,8 +137,8 @@ git commit -m "feat: project scaffold with data models and policy loader"
 git add app/agents/intake.py app/agents/document_verification.py
 git commit -m "feat: intake validation and document verification agents"
 
-git add app/agents/extraction.py app/services/gemini.py
-git commit -m "feat: document extraction agent with Gemini Vision"
+git add app/agents/extraction.py app/services/groq.py
+git commit -m "feat: document extraction agent with Groq Vision"
 
 git add app/agents/policy_engine.py
 git commit -m "feat: deterministic policy engine with all coverage rules"

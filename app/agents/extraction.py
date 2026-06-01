@@ -1,13 +1,10 @@
-"""Extraction Agent — uses Gemini Vision to extract structured data from documents.
+"""Extraction Agent — uses Groq Vision to extract structured data from documents.
 
 When documents have pre-parsed content (from test cases), uses that directly.
-When documents have image/PDF data, uses Gemini Vision for OCR and extraction.
+When documents have image/PDF data, uses Groq Vision for OCR and extraction.
 """
 
 from __future__ import annotations
-
-import asyncio
-from typing import Optional
 
 from app.models.claim import (
     ClaimRequest,
@@ -17,7 +14,7 @@ from app.models.claim import (
     ExtractedLineItem,
     DocumentType,
 )
-from app.services.gemini import gemini_client, GeminiError
+from app.services.groq import groq_client, GroqError
 
 
 EXTRACTION_PROMPT = """You are a medical document data extraction system for an Indian health insurance company.
@@ -55,7 +52,7 @@ async def extract_from_documents(
     """Extract structured data from all claim documents.
 
     If documents have pre-parsed content (test mode), uses that directly.
-    If documents have image data, uses Gemini Vision.
+    If documents have image data, uses Groq Vision.
     """
     extracted_docs: list[ExtractedDocumentData] = []
     overall_confidence = 1.0
@@ -87,9 +84,9 @@ async def _extract_single_document(doc: DocumentInput) -> ExtractedDocumentData:
     if doc.content:
         return _extract_from_content(doc)
 
-    # If image data is available, use Gemini Vision
+    # If image data is available, use Groq Vision
     if doc.file_data:
-        return await _extract_with_gemini(doc)
+        return await _extract_with_groq(doc)
 
     # No content or image — return minimal extraction
     return ExtractedDocumentData(
@@ -131,10 +128,10 @@ def _extract_from_content(doc: DocumentInput) -> ExtractedDocumentData:
     )
 
 
-async def _extract_with_gemini(doc: DocumentInput) -> ExtractedDocumentData:
-    """Use Gemini Vision to extract data from document image."""
+async def _extract_with_groq(doc: DocumentInput) -> ExtractedDocumentData:
+    """Use Groq Vision to extract data from document image."""
     try:
-        result = await gemini_client.generate_structured(
+        result = await groq_client.generate_structured(
             prompt=EXTRACTION_PROMPT,
             image_data=doc.file_data,
         )
@@ -161,15 +158,15 @@ async def _extract_with_gemini(doc: DocumentInput) -> ExtractedDocumentData:
             line_items=line_items,
             total_amount=result.get("total_amount"),
             confidence=float(result.get("confidence", 0.7)),
-            extraction_notes=["Extracted via Gemini Vision."],
+            extraction_notes=["Extracted via Groq Vision."],
         )
 
-    except GeminiError as e:
+    except GroqError as e:
         return ExtractedDocumentData(
             document_type=doc.actual_type or DocumentType.PRESCRIPTION,
             file_id=doc.file_id,
             confidence=0.3,
-            extraction_notes=[f"Gemini extraction failed: {str(e)}. Using partial data."],
+            extraction_notes=[f"Groq extraction failed: {str(e)}. Using partial data."],
         )
 
 

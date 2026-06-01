@@ -1,7 +1,6 @@
 """Streamlit UI for Health Insurance Claims Processing System."""
 
 import asyncio
-import base64
 import json
 import sys
 from pathlib import Path
@@ -99,7 +98,7 @@ doc_tab1, doc_tab2 = st.tabs(["📁 File Upload", "📝 JSON Input"])
 uploaded_files_data = []
 
 with doc_tab1:
-    st.caption("Upload medical documents (images, PDFs). The system will extract data using Gemini Vision.")
+    st.caption("Upload medical documents (images, PDFs). The system will extract data using Groq Vision.")
     uploaded_files = st.file_uploader(
         "Upload documents (JPG, PNG, PDF)",
         type=["jpg", "jpeg", "png", "pdf"],

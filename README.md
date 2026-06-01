@@ -30,8 +30,8 @@ venv\Scripts\activate          # Windows
 # source venv/bin/activate     # Linux/Mac
 pip install -r requirements.txt
 
-# Create .env with your Gemini API key (only needed for real document uploads)
-echo "GEMINI_API_KEY=your-key" > .env
+# Create .env with your Groq API key (only needed for real document uploads)
+echo "GROQ_API_KEY=your-key" > .env
 
 # Run tests (no API key needed — 27 tests)
 set PYTHONPATH=.
@@ -60,7 +60,7 @@ streamlit run streamlit_app.py
 │   ├── agents/                # Multi-agent components
 │   │   ├── intake.py              # Member eligibility validation
 │   │   ├── document_verification.py  # Early halt for doc issues (GATE)
-│   │   ├── extraction.py         # Gemini Vision data extraction
+│   │   ├── extraction.py         # Groq Vision data extraction
 │   │   ├── policy_engine.py      # Deterministic rule engine (no LLM)
 │   │   ├── fraud_detection.py    # Pattern-based fraud signals
 │   │   └── decision_aggregator.py # Final decision builder
@@ -72,7 +72,7 @@ streamlit run streamlit_app.py
 │   ├── policy/
 │   │   └── loader.py             # Policy JSON loader with caching
 │   ├── services/
-│   │   ├── gemini.py             # Gemini API client with retry
+│   │   ├── groq.py               # Groq API client with retry
 │   │   └── trace_store.py        # SQLite persistence for traces
 │   ├── config.py                 # Settings via pydantic-settings
 │   └── main.py                   # FastAPI application (5 endpoints)
