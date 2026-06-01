@@ -7,25 +7,25 @@
 A multi-agent AI system that processes OPD health insurance claims end-to-end: from document verification through policy evaluation to final decision. The system is designed for **explainability**, **graceful degradation**, and **deterministic correctness** where it matters most.
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        FastAPI / Streamlit UI                        │
-└──────────────────────────────────┬──────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                             FastAPI / Streamlit UI                       │
+└──────────────────────────────────┬───────────────────────────────────────┘
                                    │
                                    ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                      Pipeline Orchestrator (LangGraph)               │
-│                                                                     │
-│  ┌────────┐  ┌────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  ┌───────┐  │
-│  │ Intake │→ │  Doc   │→ │Extraction│→ │Extraction│→ │ Policy │→ │ Fraud │  │
-│  │Validate│  │ Verify │  │  (Groq)  │  │Validation│  │ Engine │  │Detect │  │
-│  └────────┘  └────────┘  └──────────┘  └──────────┘  └────────┘  └───────┘  │
-│                                                              │         │      │
-│                                                              ▼         ▼      │
-│                                                      ┌──────────────────┐     │
-│                                                      │    Aggregator    │     │
-│                                                      └──────────────────┘     │
-│                                            └──────────────────┘     │
-└─────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│                      Pipeline Orchestrator (LangGraph)                    │
+│                                                                           │
+│  ┌────────┐  ┌────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  ┌───────┐│
+│  │ Intake │→ │  Doc   │→ │Extraction│→ │Extraction│→ │ Policy │→ │ Fraud ││
+│  │Validate│  │ Verify │  │  (Groq)  │  │Validation│  │ Engine │  │Detect ││
+│  └────────┘  └────────┘  └──────────┘  └──────────┘  └────────┘  └───────┘│
+│                                                              │         │  │
+│                                                              ▼         ▼  │
+│                                                      ┌──────────────────┐ │
+│                                                      │    Aggregator    │ │
+│                                                      └──────────────────┘ │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
                                    │
                                    ▼
                            ┌──────────────┐
